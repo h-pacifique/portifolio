@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="rw" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umurenge Digital | Sector e-Services Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        rwBlue: { DEFAULT: '#005A9C', dark: '#004274', light: '#E6F1FA' },
+                        rwGreen: { DEFAULT: '#00A859', dark: '#008245', light: '#E6F7EF' },
+                        rwGold: { DEFAULT: '#FAD201', dark: '#D4B100', light: '#FFFBE6' },
+                        surface: '#F8FAFC'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-slate-800 antialiased selection:bg-rwBlue selection:text-white flex flex-col min-h-screen">
+
+    <!-- Rwandan Tricolor Accent Bar -->
+    <div class="w-full h-1.5 flex">
+        <div class="w-1/2 bg-rwBlue"></div>
+        <div class="w-1/4 bg-rwGold"></div>
+        <div class="w-1/4 bg-rwGreen"></div>
+    </div>
+
+    <!-- Navigation Header with Portal Switcher -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <!-- Brand Identity -->
+                <a href="#" onclick="switchPortalView('citizen')" class="flex items-center gap-3 group focus:outline-none">
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-rwBlue to-rwGreen flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#FAD201"/>
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-display font-extrabold text-lg sm:text-xl tracking-tight text-slate-900">Umurenge<span class="text-rwBlue">Digital</span></span>
+                            <span id="portal-badge" class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rwGreen-light text-rwGreen-dark rounded-full">e-Gov Citizen</span>
+                        </div>
+                        <p class="text-[11px] sm:text-xs text-slate-500 font-medium" data-i18n="tagline">Serivisi z'Umurenge hafi yawe</p>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Links (Citizen View) -->
+                <nav id="citizen-nav" class="hidden md:flex items-center gap-8">
+                    <a href="#services-section" class="text-sm font-semibold text-slate-700 hover:text-rwBlue transition-colors" data-i18n="nav_services">Serivisi Zose</a>
+                    <a href="#tracker-section" class="text-sm font-semibold text-slate-700 hover:text-rwBlue transition-colors" data-i18n="nav_track">Gukurikirana Dosiye</a>
+                    <a href="#how-it-works" class="text-sm font-semibold text-slate-700 hover:text-rwBlue transition-colors" data-i18n="nav_guide">Uko Bikora</a>
+                </nav>
+
+                <!-- Right Controls: Portal Switcher & Language Switcher -->
+                <div class="flex items-center gap-2.5 sm:gap-4">
+                    <!-- Portal View Switcher Button -->
+                    <div class="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center">
+                        <button type="button" id="btn-view-citizen" onclick="switchPortalView('citizen')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-rwBlue shadow-sm">
+                            <i class="fa-solid fa-user mr-1"></i> Citizen
+                        </button>
+                        <button type="button" id="btn-view-officer" onclick="switchPortalView('officer')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900">
+                            <i class="fa-solid fa-user-shield mr-1"></i> Officer Portal
+                        </button>
+                    </div>
+
+                    <!-- Bilingual Switcher -->
+                    <div class="bg-slate-100 p-1 rounded-full border border-slate-200 flex items-center">
+                        <button type="button" id="btn-lang-rw" onclick="setLanguage('rw')" class="px-3 py-1 rounded-full text-xs font-bold transition-all bg-rwBlue text-white shadow-sm">KIN</button>
+                        <button type="button" id="btn-lang-en" onclick="setLanguage('en')" class="px-3 py-1 rounded-full text-xs font-bold transition-all text-slate-600 hover:text-slate-900">ENG</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Floating Toast Notification Stack -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
+
+    <!-- MAIN CITIZEN PORTAL VIEW -->
+    <main id="citizen-view-container" class="flex-grow">
+        <!-- Hero Section -->
+        <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-rwBlue-dark to-rwBlue text-white py-12 sm:py-20">
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+                <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-rwGold blur-3xl"></div>
+                <div class="absolute bottom-0 left-10 w-80 h-80 rounded-full bg-rwGreen blur-3xl"></div>
+            </div>
+
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-rwGold">
+                            <span class="w-2 h-2 rounded-full bg-rwGreen animate-pulse"></span>
+                            <span data-i18n="hero_badge">Imirenge 416 yose yo mu Rwanda irahujwe</span>
+                        </div>
+
+                        <h1 class="font-display text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                            <span data-i18n="hero_title_1">Saba Serivisi z'Umurenge</span>
+                            <span class="block text-rwGold mt-1" data-i18n="hero_title_2">Utavuye iwawe mu rugo.</span>
+                        </h1>
+
+                        <p class="text-slate-200 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed" data-i18n="hero_subtitle">
+                            Nta mirongo miremire ku biro by'Umurenge. Saba ibyemezo by'irangamimerere, iby'ubutaka, n'izindi mpapuro zemewe zifite umukono w'ikoranabuhanga mu minota mike.
+                        </p>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+                            <a href="#services-section" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-rwGreen hover:bg-rwGreen-dark text-white font-bold text-sm sm:text-base shadow-lg shadow-rwGreen/30 transition-all flex items-center justify-center gap-2">
+                                <span data-i18n="hero_cta_primary">Tangira Gusaba Serivisi</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                            <a href="#tracker-section" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-satellite-dish text-rwGold"></i>
+                                <span data-i18n="hero_cta_secondary">Kurikirana Dosiye Yawe</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5">
+                        <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl space-y-5">
+                            <div class="flex items-center justify-between border-b border-white/15 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-rwGold/20 text-rwGold flex items-center justify-center">
+                                        <i class="fa-solid fa-bolt"></i>
+                                    </div>
+                                    <div>
+                                        <h2 class="font-bold text-white text-sm sm:text-base" data-i18n="quick_card_title">Serivisi Zikunzwe Cyane</h2>
+                                        <p class="text-xs text-slate-300" data-i18n="quick_card_sub">Kanda kuri serivisi uhite uyisaba</p>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-rwGreen/20 text-emerald-300 text-xs font-semibold">24/7</span>
+                            </div>
+                            <div class="space-y-3" id="hero-popular-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Catalog Section -->
+        <section id="services-section" class="py-14 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-rwBlue bg-rwBlue-light px-3 py-1 rounded-full" data-i18n="catalog_badge">Urutonde rwa Serivisi</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2" data-i18n="catalog_title">Hitamo Serivisi Wifuza</h2>
+                </div>
+
+                <div class="relative w-full md:w-96">
+                    <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="service-search" placeholder="Shakisha serivisi..." class="w-full pl-11 pr-10 py-3 rounded-xl bg-white border border-slate-200 shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-rwBlue">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 overflow-x-auto pb-4 mb-6" id="category-pills"></div>
+            <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- Live Tracker Section -->
+        <section id="tracker-section" class="py-14 sm:py-20 bg-white border-y border-slate-200/80">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <span class="text-xs font-bold uppercase tracking-wider text-rwGreen-dark bg-rwGreen-light px-3 py-1 rounded-full" data-i18n="tracker_badge">Ikurikiranabikorwa</span>
+                    <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2" data-i18n="tracker_title">Kurikirana Aho Dosiye Yawe Igeze</h2>
+                </div>
+
+                <div class="bg-surface p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm">
+                    <form id="tracker-form" onsubmit="handleTrackSubmit(event)" class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-grow">
+                            <i class="fa-solid fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="tracking-input" value="UMR-2026-8841" class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white border border-slate-300 font-mono text-sm sm:text-base uppercase focus:outline-none focus:ring-2 focus:ring-rwBlue">
+                        </div>
+                        <button type="submit" class="px-7 py-3.5 rounded-xl bg-rwBlue hover:bg-rwBlue-dark text-white font-bold text-sm sm:text-base shadow-md transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span data-i18n="tracker_btn">Reba Aho Igeze</span>
+                        </button>
+                    </form>
+                    <div id="tracking-result" class="mt-8 pt-6 border-t border-slate-200"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- SECTOR OFFICER & EXECUTIVE SECRETARY PORTAL VIEW (Hidden by default) -->
+    <main id="officer-view-container" class="hidden flex-grow py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <!-- Officer Header Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-rwBlue-dark to-rwBlue rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <span class="px-3 py-1 rounded-full bg-rwGold/20 text-rwGold text-xs font-bold uppercase tracking-wider mb-2 inline-block">Sector Staff Management</span>
+                <h1 class="font-display text-2xl sm:text-3xl font-extrabold">Executive Secretary & Officer Dashboard</h1>
+                <p class="text-slate-300 text-sm mt-1">Review incoming dossiers, verify citizen identity, and apply digital PKI signatures.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/15 text-center">
+                    <div class="text-xs text-slate-300">Logged in Sector</div>
+                    <div class="font-bold text-white text-sm">Nyagatare Sector</div>
+                </div>
+                <div class="bg-rwGreen/20 px-4 py-3 rounded-xl border border-rwGreen/30 text-center">
+                    <div class="text-xs text-emerald-300">PKI Key Status</div>
+                    <div class="font-bold text-white text-sm flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rwGreen"></span> HSM Active</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-5 mb-8">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-slate-400 uppercase">Total Applications</div>
+                    <div class="font-display font-extrabold text-2xl text-slate-900 mt-1" id="dash-total-count">0</div>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-rwBlue-light text-rwBlue flex items-center justify-center text-lg"><i class="fa-solid fa-folder-open"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-slate-400 uppercase">Pending Verification</div>
+                    <div class="font-display font-extrabold text-2xl text-amber-600 mt-1" id="dash-pending-count">0</div>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-slate-400 uppercase">Awaiting Signature</div>
+                    <div class="font-display font-extrabold text-2xl text-rwBlue mt-1" id="dash-awaiting-count">0</div>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-rwBlue-light text-rwBlue flex items-center justify-center text-lg"><i class="fa-solid fa-signature"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="text-xs font-bold text-slate-400 uppercase">Signed & Completed</div>
+                    <div class="font-display font-extrabold text-2xl text-rwGreen-dark mt-1" id="dash-completed-count">0</div>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-rwGreen-light text-rwGreen-dark flex items-center justify-center text-lg"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+        </div>
+
+        <!-- Incoming Dossiers Queue Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h3 class="font-bold text-slate-900 text-lg">Incoming Service Dossiers Queue</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="filterOfficerQueue('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200">All</button>
+                    <button onclick="filterOfficerQueue('pending')" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-amber-700 hover:bg-amber-50">Pending Review</button>
+                    <button onclick="filterOfficerQueue('completed')" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-200 bg-white text-rwGreen-dark hover:bg-rwGreen-light">Completed</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-700">
+                    <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4">Tracking ID / Date</th>
+                            <th class="px-6 py-4">Citizen Name</th>
+                            <th class="px-6 py-4">Requested Service</th>
+                            <th class="px-6 py-4">Current Stage</th>
+                            <th class="px-6 py-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="officer-queue-tbody" class="divide-y divide-slate-200"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-300 py-8 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500">
+            &copy; 2026 Umurenge Digital Portal — Republic of Rwanda e-Gov Prototype.
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE MULTI-STEP APPLICATION MODAL -->
+    <div id="application-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" onclick="closeApplicationModal()"></div>
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-6">
+            <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-rwBlue-dark to-rwBlue px-6 py-5 text-white flex items-start justify-between">
+                    <div>
+                        <span id="modal-service-category" class="inline-block px-2.5 py-0.5 rounded-full bg-white/15 text-rwGold text-[11px] font-bold uppercase tracking-wider mb-1">Category</span>
+                        <h3 id="modal-service-title" class="font-display font-bold text-lg sm:text-xl leading-snug">Service Title</h3>
+                    </div>
+                    <button type="button" onclick="closeApplicationModal()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Modal Body Steps -->
+                <div class="p-6">
+                    <!-- Step 1: NIDA & Phone -->
+                    <div id="wizard-panel-1" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-800 mb-1">Nimero y'Indangamuntu (Imibare 16)</label>
+                            <input type="text" id="nid-input" maxlength="16" placeholder="1199880012345678" oninput="handleNidInput(this.value)" class="w-full px-4 py-3 rounded-xl border border-slate-300 font-mono text-base focus:ring-2 focus:ring-rwBlue">
+                        </div>
+                        <div id="nida-preview-card" class="hidden p-4 rounded-xl bg-rwBlue-light border border-rwBlue/20 text-sm">
+                            <span class="text-xs font-bold uppercase text-rwBlue flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-rwGreen"></i> NIDA Record Verified</span>
+                            <div class="mt-1 font-bold text-slate-900" id="nida-citizen-name">MUGISHA Jean Claude</div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-800 mb-1">Nimero ya Telefoni (+250)</label>
+                            <input type="tel" id="phone-input" maxlength="9" placeholder="788123456" class="w-full px-4 py-3 rounded-xl border border-slate-300 font-mono text-base focus:ring-2 focus:ring-rwBlue">
+                        </div>
+                        <button type="button" onclick="goToStep(2)" class="w-full py-3.5 bg-rwBlue text-white font-bold rounded-xl hover:bg-rwBlue-dark">Komeza (Next)</button>
+                    </div>
+
+                    <!-- Step 2: Location & Dynamic Uploads -->
+                    <div id="wizard-panel-2" class="hidden space-y-4">
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div><label class="font-bold">Akarere (District)</label><select id="sel-district" class="w-full p-2.5 border rounded-xl"><option value="Nyagatare">Nyagatare</option><option value="Gasabo">Gasabo</option></select></div>
+                            <div><label class="font-bold">Umurenge (Sector)</label><select id="sel-sector" class="w-full p-2.5 border rounded-xl"><option value="Nyagatare">Nyagatare</option><option value="Remera">Remera</option></select></div>
+                        </div>
+
+                        <!-- Dynamic Dynamic Document Upload Dropzone -->
+                        <div class="border-2 border-dashed border-slate-300 rounded-2xl p-5 bg-slate-50 text-center relative hover:bg-slate-100 transition-colors">
+                            <input type="file" id="file-upload-input" onchange="handleFileUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <div class="w-10 h-10 rounded-full bg-rwBlue-light text-rwBlue flex items-center justify-center mx-auto mb-2 text-lg"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <div class="font-bold text-sm text-slate-800" id="upload-label-title">Shyiraho Impapuro Zinyongera (Upload Supporting Document)</div>
+                            <div class="text-xs text-slate-500 mt-1" id="upload-label-sub">PDF, PNG, JPG (Max 5MB)</div>
+                            <div id="uploaded-file-badge" class="hidden mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs">
+                                <i class="fa-solid fa-file-pdf"></i> <span id="uploaded-file-name">document.pdf</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between gap-3">
+                            <button type="button" onclick="goToStep(1)" class="px-5 py-3 border rounded-xl font-bold">Subira Inyuma</button>
+                            <button type="button" onclick="goToStep(3)" class="px-6 py-3 bg-rwBlue text-white font-bold rounded-xl hover:bg-rwBlue-dark">Komeza</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Payment & Submission -->
+                    <div id="wizard-panel-3" class="hidden space-y-4">
+                        <div class="p-4 bg-slate-50 rounded-xl border text-sm space-y-1">
+                            <div class="flex justify-between"><span class="text-slate-500">Usaba:</span><strong id="sum-name">MUGISHA Jean Claude</strong></div>
+                            <div class="flex justify-between"><span class="text-slate-500">Ikiguzi:</span><strong id="sum-fee" class="text-rwGreen-dark">500 RWF</strong></div>
+                        </div>
+                        <button type="button" onclick="submitApplication()" class="w-full py-3.5 bg-rwGreen text-white font-bold rounded-xl hover:bg-rwGreen-dark">Ishyura & Ohereza (Submit & Pay)</button>
+                    </div>
+
+                    <!-- Step 4: Success Receipt -->
+                    <div id="wizard-panel-success" class="hidden text-center space-y-4 py-3">
+                        <div class="w-16 h-16 rounded-full bg-rwGreen-light text-rwGreen flex items-center justify-center mx-auto text-3xl"><i class="fa-solid fa-circle-check"></i></div>
+                        <h4 class="font-extrabold text-xl">Ubusabe Bwawe Bwakiriwe!</h4>
+                        <div class="p-4 bg-slate-50 border border-dashed rounded-xl font-mono text-lg text-rwBlue font-bold" id="rec-tracking-id">UMR-2026-9042</div>
+                        <button type="button" onclick="trackNewlyCreated()" class="px-6 py-3 bg-rwBlue text-white font-bold rounded-xl">Kurikirana Dosiye Ubu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OFFICER REVIEW & DIGITAL PKI SIGNATURE MODAL -->
+    <div id="officer-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" onclick="closeOfficerModal()"></div>
+        <div class="flex min-h-full items-center justify-center p-3 sm:p-6">
+            <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-slate-900 px-6 py-5 text-white flex items-start justify-between">
+                    <div>
+                        <span class="px-2.5 py-0.5 rounded-full bg-rwGold/20 text-rwGold text-[11px] font-bold uppercase">Officer Review & PKI Signing</span>
+                        <h3 class="font-bold text-lg mt-1" id="off-modal-title">Review Application</h3>
+                    </div>
+                    <button type="button" onclick="closeOfficerModal()" class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 space-y-5">
+                    <div class="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl border">
+                        <div><span class="text-xs text-slate-500 block">Tracking ID:</span><strong id="off-modal-id" class="font-mono text-rwBlue">-</strong></div>
+                        <div><span class="text-xs text-slate-500 block">Citizen Applicant:</span><strong id="off-modal-citizen">-</strong></div>
+                        <div><span class="text-xs text-slate-500 block">Service:</span><strong id="off-modal-service">-</strong></div>
+                        <div><span class="text-xs text-slate-500 block">Current Stage:</span><span id="off-modal-stage-badge" class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Pending Review</span></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Attached Verification Document</label>
+                        <div class="p-3 rounded-xl border border-slate-200 bg-slate-100 flex items-center justify-between text-xs font-medium">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-500 text-base"></i> <span id="off-modal-file-name">citizen_id_extract.pdf</span></span>
+                            <span class="text-rwBlue font-bold hover:underline cursor-pointer">Preview Document</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Executive Officer Decision Note</label>
+                        <textarea id="off-modal-note" rows="2" placeholder="All requirements met. Approved for digital signature release..." class="w-full p-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-rwBlue"></textarea>
+                    </div>
+
+                    <div class="pt-2 flex items-center justify-end gap-3">
+                        <button type="button" onclick="closeOfficerModal()" class="px-5 py-2.5 rounded-xl border font-bold text-sm">Cancel</button>
+                        <button type="button" onclick="applyDigitalSignature()" id="btn-pki-sign" class="px-6 py-2.5 rounded-xl bg-rwGreen hover:bg-rwGreen-dark text-white font-bold text-sm shadow-md flex items-center gap-2">
+                            <i class="fa-solid fa-key"></i> Apply PKI Digital Signature
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        let currentLang = 'rw';
+        let currentPortalView = 'citizen';
+        let activeService = null;
+        let selectedUploadedFile = null;
+        let activeOfficerRecordId = null;
+
+        const defaultTrackingRecords = {
+            "UMR-2026-8841": { id: "UMR-2026-8841", billingId: "88202641098", citizen: "UWASE Diane", serviceRw: "Icyemezo cy'Amavuko", serviceEn: "Birth Certificate", sector: "Nyagatare (Nyagatare)", submittedAt: "2026-11-17 09:15", stage: 4, documentName: "NIDA_Birth_Extract.pdf" },
+            "UMR-2026-8892": { id: "UMR-2026-8892", billingId: "88202677312", citizen: "HABIMANA Patrick", serviceRw: "Icyemezo cy'Uko Uri Ingaragu", serviceEn: "Certificate of Being Single", sector: "Remera (Gasabo)", submittedAt: "2026-11-17 14:30", stage: 3, documentName: "Cell_Attestation_Note.pdf" },
+            "UMR-2026-8815": { id: "UMR-2026-8815", billingId: "88202611904", citizen: "MUKAMANA Aline", serviceRw: "Gusaba Uruhushya rwo Kuvugurura Inzu", serviceEn: "Building Renovation Permit", sector: "Muhoza (Musanze)", submittedAt: "2026-11-17 16:05", stage: 2, documentName: "Land_Title_Upik.pdf" }
+        };
+
+        function getRecords() {
+            const stored = localStorage.getItem('umurenge_records');
+            return stored ? JSON.parse(stored) : defaultTrackingRecords;
+        }
+
+        function saveRecords(records) {
+            localStorage.setItem('umurenge_records', JSON.stringify(records));
+        }
+
+        // Toast Feedback System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-slate-900 text-white border-rwGreen' : 'bg-red-900 text-white border-red-500';
+            toast.className = `p-4 rounded-xl border-l-4 ${bgClass} shadow-xl text-xs sm:text-sm font-medium flex items-center justify-between pointer-events-auto transition-all transform translate-x-4 opacity-0`;
+            toast.innerHTML = `<span>${message}</span><button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.classList.remove('translate-x-4', 'opacity-0'); }, 50);
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
+
+        // Portal Switcher
+        function switchPortalView(view) {
+            currentPortalView = view;
+            const citizenView = document.getElementById('citizen-view-container');
+            const officerView = document.getElementById('officer-view-container');
+            const citizenNav = document.getElementById('citizen-nav');
+            const btnCit = document.getElementById('btn-view-citizen');
+            const btnOff = document.getElementById('btn-view-officer');
+            const badge = document.getElementById('portal-badge');
+
+            if (view === 'officer') {
+                citizenView.classList.add('hidden');
+                citizenNav.classList.add('hidden');
+                officerView.classList.remove('hidden');
+                btnOff.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-rwBlue text-white shadow-sm";
+                btnCit.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900";
+                badge.textContent = "Sector Officer Portal";
+                badge.className = "hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rwGold-light text-amber-800 rounded-full";
+                renderOfficerDashboard();
+            } else {
+                officerView.classList.add('hidden');
+                citizenNav.classList.remove('hidden');
+                citizenView.classList.remove('hidden');
+                btnCit.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-rwBlue text-white shadow-sm";
+                btnOff.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900";
+                badge.textContent = "e-Gov Citizen";
+                badge.className = "hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-rwGreen-light text-rwGreen-dark rounded-full";
+            }
+        }
+
+        // Sector Officer Dashboard Table & Actions
+        function renderOfficerDashboard(filter = 'all') {
+            const records = Object.values(getRecords());
+            const tbody = document.getElementById('officer-queue-tbody');
+            
+            document.getElementById('dash-total-count').textContent = records.length;
+            document.getElementById('dash-pending-count').textContent = records.filter(r => r.stage === 2).length;
+            document.getElementById('dash-awaiting-count').textContent = records.filter(r => r.stage === 3).length;
+            document.getElementById('dash-completed-count').textContent = records.filter(r => r.stage === 4).length;
+
+            const filtered = records.filter(r => {
+                if (filter === 'pending') return r.stage === 2 || r.stage === 3;
+                if (filter === 'completed') return r.stage === 4;
+                return true;
+            });
+
+            tbody.innerHTML = filtered.map(r => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-4 font-mono font-bold text-rwBlue">${r.id}<div class="text-[11px] text-slate-400 font-sans font-normal">${r.submittedAt}</div></td>
+                    <td class="px-6 py-4 font-bold text-slate-900">${r.citizen}</td>
+                    <td class="px-6 py-4">${currentLang === 'rw' ? r.serviceRw : r.serviceEn}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${r.stage === 4 ? 'bg-rwGreen-light text-rwGreen-dark' : 'bg-amber-100 text-amber-800'}">
+                            ${r.stage === 4 ? 'Completed (Signed)' : 'Stage 0' + r.stage + ' Review'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="openOfficerModal('${r.id}')" class="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-rwBlue text-white font-bold text-xs">
+                            ${r.stage === 4 ? 'View Dossier' : 'Review & Sign'}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openOfficerModal(id) {
+            const records = getRecords();
+            const record = records[id];
+            if (!record) return;
+
+            activeOfficerRecordId = id;
+            document.getElementById('off-modal-id').textContent = record.id;
+            document.getElementById('off-modal-citizen').textContent = record.citizen;
+            document.getElementById('off-modal-service').textContent = currentLang === 'rw' ? record.serviceRw : record.serviceEn;
+            document.getElementById('off-modal-file-name').textContent = record.documentName || "citizen_application.pdf";
+            
+            const btnSign = document.getElementById('btn-pki-sign');
+            if (record.stage === 4) {
+                btnSign.disabled = true;
+                btnSign.className = "px-6 py-2.5 rounded-xl bg-slate-200 text-slate-500 font-bold text-sm flex items-center gap-2 cursor-not-allowed";
+                btnSign.innerHTML = `<i class="fa-solid fa-check"></i> Already PKI Signed`;
+            } else {
+                btnSign.disabled = false;
+                btnSign.className = "px-6 py-2.5 rounded-xl bg-rwGreen hover:bg-rwGreen-dark text-white font-bold text-sm shadow-md flex items-center gap-2";
+                btnSign.innerHTML = `<i class="fa-solid fa-key"></i> Apply PKI Digital Signature`;
+            }
+
+            document.getElementById('officer-modal').classList.remove('hidden');
+        }
+
+        function closeOfficerModal() {
+            document.getElementById('officer-modal').classList.add('hidden');
+        }
+
+        function applyDigitalSignature() {
+            if (!activeOfficerRecordId) return;
+            const records = getRecords();
+            if (records[activeOfficerRecordId]) {
+                records[activeOfficerRecordId].stage = 4; // Set stage to 4 (QR PDF Ready)
+                saveRecords(records);
+                closeOfficerModal();
+                renderOfficerDashboard();
+                showToast(`PKI Digital Signature Applied to ${activeOfficerRecordId}! Certificate generated.`);
+            }
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedUploadedFile = file.name;
+                document.getElementById('uploaded-file-name').textContent = file.name;
+                document.getElementById('uploaded-file-badge').classList.remove('hidden');
+                showToast(`File "${file.name}" uploaded successfully.`);
+            }
+        }
+
+        // Basic initialization hooks
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('umurenge_records')) {
+                saveRecords(defaultTrackingRecords);
+            }
+        });
+    </script>
+</body>
+</html>
